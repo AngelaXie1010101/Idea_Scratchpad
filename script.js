@@ -206,15 +206,18 @@ function snippetFromHTML(html) {
   const temp = escapeHTML(html);
   const text = temp.textContent.replace(/\s+/g, " ").trim();
   if (!text) return "Empty note";
-  return text.length > 110 ? `${text.slice(0, 110)}…` : text;
+  return text.length > 30 ? `${text.slice(0, 30)}...` : text;
 }
 
 function titleFromHTML(html) {
   const temp = escapeHTML(html);
   const heading = temp.querySelector("h1, h2, h3");
-  if (heading && heading.textContent.trim()) return heading.textContent.trim();
+  if (heading && heading.textContent.trim()) {
+    const headingText = heading.textContent.trim();
+    return headingText.length > 30 ? `${headingText.slice(0, 30)}...` : headingText;
+  }
   const firstText = snippetFromHTML(html);
-  return firstText.length > 28 ? `${firstText.slice(0, 28)}…` : firstText;
+  return firstText;
 }
 
 function formatDate(value) {

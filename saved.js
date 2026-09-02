@@ -61,18 +61,23 @@ function textFromHTML(html) {
   return node.textContent.replace(/\s+/g, " ").trim();
 }
 
+function truncateText(text, maxLength = 30) {
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength)}...`;
+}
+
 function titleFromHTML(html) {
   const node = document.createElement("div");
   node.innerHTML = html || "";
   const heading = node.querySelector("h1, h2, h3");
   const title = heading?.textContent.trim() || textFromHTML(html);
-  return title || "Untitled note";
+  return title ? truncateText(title) : "Untitled note";
 }
 
 function snippetFromHTML(html) {
   const text = textFromHTML(html);
   if (!text) return "Empty note";
-  return text.length > 150 ? `${text.slice(0, 150)}…` : text;
+  return truncateText(text);
 }
 
 function dateValue(note, field) {
