@@ -145,6 +145,31 @@
     </section>
   </div>
 
+  <div class="secret-modal-backdrop" id="secretModal" aria-hidden="true">
+    <section class="secret-modal paper-card" role="dialog" aria-modal="true" aria-labelledby="secretTitle">
+      <div class="secret-modal-head">
+        <div>
+          <p class="eyebrow">Hidden notes</p>
+          <h2 id="secretTitle">Make a password</h2>
+        </div>
+        <button class="back-btn modal-close" id="secretClose" type="button" aria-label="Close hidden notes">×</button>
+      </div>
+
+      <p class="secret-message" id="secretMessage">Choose 5 numbers for this section.</p>
+      <label class="secret-input-label">
+        <span id="secretInputLabel">Password</span>
+        <input id="secretPasswordInput" type="password" inputmode="numeric" maxlength="5" autocomplete="off" pattern="[0-9]{5}" />
+      </label>
+      <p class="secret-error" id="secretError" role="alert" aria-live="polite"></p>
+
+      <div class="secret-actions">
+        <button class="tool-btn" id="secretCancel" type="button">Cancel</button>
+        <button class="tool-btn" id="secretNewPassword" type="button">New password</button>
+        <button class="tool-btn primary" id="secretSubmit" type="button">Submit</button>
+      </div>
+    </section>
+  </div>
+
   <script src="saved.js"></script>
 </body>
 </html>

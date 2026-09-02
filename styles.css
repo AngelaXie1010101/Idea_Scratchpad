@@ -1500,6 +1500,61 @@ h1 {
   touch-action: none;
 }
 
+.secret-board-card {
+  position: absolute;
+  left: 50%;
+  bottom: 24px;
+  z-index: 12;
+  width: min(440px, calc(100% - 44px));
+  min-height: 116px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 24px;
+  border: 1px solid rgba(92, 108, 123, 0.16);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 16px 30px rgba(42, 58, 71, 0.14);
+  transform: translateX(-50%);
+}
+
+.secret-glass {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  border: 5px solid #6a7885;
+  border-radius: 50%;
+  background: linear-gradient(145deg, rgba(230, 240, 248, 0.48), rgba(255, 255, 255, 0.9));
+}
+
+.secret-glass::after {
+  content: "";
+  position: absolute;
+  width: 28px;
+  height: 7px;
+  right: -22px;
+  bottom: -10px;
+  border-radius: 999px;
+  background: #6a7885;
+  transform: rotate(45deg);
+}
+
+.secret-card-copy {
+  display: grid;
+  gap: 7px;
+}
+
+.secret-card-copy h3 {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.45rem;
+  line-height: 1;
+}
+
+.secret-view-btn {
+  min-width: 82px;
+}
+
 .board-surface::before,
 .board-surface::after {
   content: "";
@@ -1671,7 +1726,8 @@ h1 {
   text-decoration: none;
 }
 
-.note-modal-backdrop {
+.note-modal-backdrop,
+.secret-modal-backdrop {
   position: fixed;
   inset: 0;
   z-index: 90;
@@ -1684,12 +1740,14 @@ h1 {
   transition: opacity 180ms ease;
 }
 
-.note-modal-backdrop.open {
+.note-modal-backdrop.open,
+.secret-modal-backdrop.open {
   opacity: 1;
   pointer-events: auto;
 }
 
-.note-modal {
+.note-modal,
+.secret-modal {
   width: min(720px, 100%);
   max-height: min(760px, calc(100vh - 48px));
   display: grid;
@@ -1701,12 +1759,15 @@ h1 {
   transition: transform 180ms ease;
 }
 
-.note-modal-backdrop.open .note-modal {
+.note-modal-backdrop.open .note-modal,
+.secret-modal-backdrop.open .secret-modal {
   transform: translateY(0) scale(1);
 }
 
 .note-modal-head,
-.note-modal-actions {
+.note-modal-actions,
+.secret-modal-head,
+.secret-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1718,6 +1779,69 @@ h1 {
   font-family: Georgia, "Times New Roman", serif;
   font-size: 1.55rem;
   line-height: 1.1;
+}
+
+.secret-modal {
+  width: min(430px, 100%);
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.98);
+}
+
+.secret-modal-head h2 {
+  margin-top: 4px;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.45rem;
+  line-height: 1.1;
+}
+
+.secret-message {
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.secret-input-label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.secret-input-label input {
+  width: 100%;
+  min-height: 48px;
+  padding: 10px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(92, 108, 123, 0.16);
+  outline: 0;
+  color: var(--ink);
+  background: rgba(246, 249, 252, 0.92);
+  font-size: 1.18rem;
+  letter-spacing: 0.16em;
+}
+
+.secret-input-label input:focus {
+  border-color: rgba(154, 95, 54, 0.42);
+  box-shadow: 0 0 0 4px rgba(209, 139, 97, 0.12);
+}
+
+.secret-error {
+  min-height: 20px;
+  color: #9a3f36;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.secret-actions {
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.secret-actions .tool-btn {
+  width: auto;
+  min-width: 104px;
 }
 
 .modal-close {
@@ -1878,6 +2002,16 @@ h1 {
 
   .board-surface {
     min-height: 720px;
+  }
+
+  .secret-board-card {
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .secret-view-btn {
+    grid-column: 1 / -1;
+    width: 100%;
   }
 
   .saved-page-note {

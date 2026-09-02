@@ -1,4 +1,5 @@
 const STORAGE_KEY = "locker-notes-saved-v4";
+const SECRET_PASSWORD_KEY = "locker-notes-secret-password-v1";
 const savedGrid = document.getElementById("savedGrid");
 const savedTotal = document.getElementById("savedTotal");
 const searchNotes = document.getElementById("searchNotes");
@@ -18,9 +19,20 @@ const modalKind = document.getElementById("modalKind");
 const closeModalButton = document.getElementById("closeModal");
 const cancelModalButton = document.getElementById("cancelModal");
 const updateNoteButton = document.getElementById("updateNote");
+const secretModal = document.getElementById("secretModal");
+const secretTitle = document.getElementById("secretTitle");
+const secretMessage = document.getElementById("secretMessage");
+const secretInputLabel = document.getElementById("secretInputLabel");
+const secretPasswordInput = document.getElementById("secretPasswordInput");
+const secretError = document.getElementById("secretError");
+const secretCloseButton = document.getElementById("secretClose");
+const secretCancelButton = document.getElementById("secretCancel");
+const secretNewPasswordButton = document.getElementById("secretNewPassword");
+const secretSubmitButton = document.getElementById("secretSubmit");
 
 let editingNoteId = null;
 let activeColorFilter = "all";
+let secretMode = "setup";
 
 const colorNames = {
   butter: "Yellow",
@@ -53,6 +65,14 @@ function getNotes() {
 
 function saveNotes(notes) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+}
+
+function getSecretPassword() {
+  return localStorage.getItem(SECRET_PASSWORD_KEY) || "";
+}
+
+function saveSecretPassword(password) {
+  localStorage.setItem(SECRET_PASSWORD_KEY, password);
 }
 
 function textFromHTML(html) {
@@ -128,6 +148,7 @@ function renderEmptyState(hasNotes) {
     ? "<strong>No notes match those filters.</strong><p>Try another color, paper style, or search word.</p>"
     : "<strong>Your locker is empty for now.</strong><p>Write something worth keeping and it will show up here.</p><a class='tool-btn primary' href='index.html#workspace'>Write a new note</a>";
   savedGrid.appendChild(empty);
+  renderSecretSection();
 }
 
 function clamp(value, min, max) {
@@ -145,7 +166,8 @@ function sizeBoardForNotes(count) {
   const rows = Math.max(1, Math.ceil(count / columns));
   const rowHeight = window.innerWidth < 620 ? 246 : 278;
   const baseHeight = window.innerWidth < 620 ? 560 : Math.min(window.innerHeight * 0.66, 680);
-  const expandedHeight = rows * rowHeight + 70;
+  const secretShelfHeight = window.innerWidth < 620 ? 190 : 170;
+  const expandedHeight = rows * rowHeight + secretShelfHeight;
   const height = Math.ceil(Math.max(baseHeight, expandedHeight));
   savedGrid.style.minHeight = `${height}px`;
   savedGrid.style.height = `${height}px`;
@@ -153,16 +175,17 @@ function sizeBoardForNotes(count) {
 
 function initialPosition(index, total) {
   const columns = getBoardColumnCount();
-  const rows = Math.max(1, Math.ceil(total / columns));
   const column = index % columns;
   const row = Math.floor(index / columns);
+  const boardHeight = parseFloat(savedGrid.style.height) || savedGrid.getBoundingClientRect().height || 680;
+  const rowHeight = window.innerWidth < 620 ? 246 : 278;
   const xJitter = row % 2 === 0 ? 0.02 : 0.06;
-  const yJitter = column % 2 === 0 ? 0.025 : 0.055;
+  const yJitter = column % 2 === 0 ? 24 : 38;
   const rotationPattern = [-2, 1.5, -1, 2.2, -2.4, 1];
 
   return {
     x: clamp(column / columns + xJitter, 0.035, 0.74),
-    y: clamp(row / rows + yJitter, 0.035, 0.88),
+    y: clamp((row * rowHeight + yJitter) / boardHeight, 0.035, 0.78),
     rotation: rotationPattern[index % rotationPattern.length],
   };
 }
@@ -183,6 +206,22 @@ function applyPosition(card, position) {
   card.style.top = `${position.y * 100}%`;
   card.style.zIndex = position.z;
   card.style.setProperty("--note-rotation", `${position.rotation}deg`);
+}
+
+function renderSecretSection() {
+  const secretCard = document.createElement("article");
+  secretCard.className = "secret-board-card";
+  secretCard.setAttribute("aria-label", "Other hidden notes");
+  secretCard.innerHTML = `
+    <div class="secret-glass" aria-hidden="true"></div>
+    <div class="secret-card-copy">
+      <span class="paper-chip">Hidden notes</span>
+      <h3>Other</h3>
+    </div>
+    <button class="load-btn secret-view-btn" type="button">View</button>
+  `;
+  secretCard.querySelector(".secret-view-btn").addEventListener("click", openSecretModal);
+  savedGrid.appendChild(secretCard);
 }
 
 function persistPosition(note) {
@@ -282,6 +321,104 @@ function updateOpenNote() {
   render();
 }
 
+function scrollToSavedTop() {
+  document.querySelector(".saved-page-header")?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function setSecretMode(mode) {
+  secretMode = mode;
+  secretPasswordInput.value = "";
+  secretError.textContent = "";
+  secretNewPasswordButton.hidden = mode !== "unlock";
+
+  if (mode === "setup") {
+    secretTitle.textContent = "Make a password";
+    secretMessage.textContent = "Choose 5 numbers for this section.";
+    secretInputLabel.textContent = "New 5-number password";
+    secretPasswordInput.autocomplete = "new-password";
+    return;
+  }
+
+  if (mode === "change-old") {
+    secretTitle.textContent = "Check old password";
+    secretMessage.textContent = "Enter your old 5-number password first.";
+    secretInputLabel.textContent = "Old password";
+    secretPasswordInput.autocomplete = "current-password";
+    return;
+  }
+
+  if (mode === "change-new") {
+    secretTitle.textContent = "New password";
+    secretMessage.textContent = "Now choose a new 5-number password.";
+    secretInputLabel.textContent = "New 5-number password";
+    secretPasswordInput.autocomplete = "new-password";
+    return;
+  }
+
+  secretTitle.textContent = "Enter password";
+  secretMessage.textContent = "Type your 5-number password to view Other.";
+  secretInputLabel.textContent = "Password";
+  secretPasswordInput.autocomplete = "current-password";
+}
+
+function openSecretModal() {
+  setSecretMode(getSecretPassword() ? "unlock" : "setup");
+  secretModal.classList.add("open");
+  secretModal.setAttribute("aria-hidden", "false");
+  window.setTimeout(() => secretPasswordInput.focus(), 60);
+}
+
+function closeSecretModal() {
+  secretModal.classList.remove("open");
+  secretModal.setAttribute("aria-hidden", "true");
+  secretError.textContent = "";
+}
+
+function requireFiveDigits(value) {
+  return /^\d{5}$/.test(value);
+}
+
+function submitSecretPassword() {
+  const password = secretPasswordInput.value.trim();
+
+  if (!requireFiveDigits(password)) {
+    secretError.textContent = "Use exactly 5 numbers.";
+    return;
+  }
+
+  if (secretMode === "setup") {
+    saveSecretPassword(password);
+    closeSecretModal();
+    scrollToSavedTop();
+    return;
+  }
+
+  if (secretMode === "unlock") {
+    if (password !== getSecretPassword()) {
+      secretError.textContent = "That password is not correct.";
+      return;
+    }
+    secretMessage.textContent = "Other is unlocked.";
+    secretError.textContent = "";
+    return;
+  }
+
+  if (secretMode === "change-old") {
+    if (password !== getSecretPassword()) {
+      secretError.textContent = "That old password is not correct.";
+      return;
+    }
+    setSecretMode("change-new");
+    return;
+  }
+
+  if (secretMode === "change-new") {
+    saveSecretPassword(password);
+    closeSecretModal();
+    scrollToSavedTop();
+  }
+}
+
 function render() {
   const allNotes = getNotes();
   const notes = getFilteredNotes();
@@ -328,6 +465,7 @@ function render() {
 
     savedGrid.appendChild(fragment);
   });
+  renderSecretSection();
 }
 
 function setColorFilter(color) {
@@ -360,13 +498,31 @@ modalKind.addEventListener("change", () => {
 closeModalButton.addEventListener("click", closeNoteModal);
 cancelModalButton.addEventListener("click", closeNoteModal);
 updateNoteButton.addEventListener("click", updateOpenNote);
+secretCloseButton.addEventListener("click", closeSecretModal);
+secretCancelButton.addEventListener("click", closeSecretModal);
+secretNewPasswordButton.addEventListener("click", () => setSecretMode("change-old"));
+secretSubmitButton.addEventListener("click", submitSecretPassword);
+
+secretPasswordInput.addEventListener("input", () => {
+  secretPasswordInput.value = secretPasswordInput.value.replace(/\D/g, "").slice(0, 5);
+  secretError.textContent = "";
+});
+
+secretPasswordInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") submitSecretPassword();
+});
 
 noteModal.addEventListener("click", (event) => {
   if (event.target === noteModal) closeNoteModal();
 });
 
+secretModal.addEventListener("click", (event) => {
+  if (event.target === secretModal) closeSecretModal();
+});
+
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape" && noteModal.classList.contains("open")) closeNoteModal();
+  if (event.key === "Escape" && secretModal.classList.contains("open")) closeSecretModal();
 });
 
 render();
