@@ -1758,6 +1758,10 @@ h1 {
   pointer-events: auto;
 }
 
+.note-modal-backdrop.open {
+  z-index: 100;
+}
+
 .note-modal,
 .secret-modal {
   width: min(720px, 100%);
@@ -1909,6 +1913,22 @@ h1 {
 .secret-empty {
   color: var(--muted);
   font-size: 0.78rem;
+}
+
+.secret-note-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.secret-note-actions .load-btn {
+  padding: 8px 12px;
+}
+
+.secret-note-actions .mini-remove {
+  flex: 0 0 auto;
 }
 
 .secret-actions {

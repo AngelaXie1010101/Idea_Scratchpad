@@ -36,6 +36,7 @@ const secretNotesList = document.getElementById("secretNotesList");
 const secretNotesCount = document.getElementById("secretNotesCount");
 
 let editingNoteId = null;
+let editingNoteStore = "public";
 let activeColorFilter = "all";
 let secretMode = "setup";
 
@@ -265,7 +266,24 @@ function renderHiddenNotes() {
     const date = document.createElement("small");
     date.textContent = formatDate(note.updatedAt || note.createdAt);
 
-    item.append(title, preview, date);
+    const actions = document.createElement("div");
+    actions.className = "secret-note-actions";
+
+    const openButton = document.createElement("button");
+    openButton.className = "load-btn";
+    openButton.type = "button";
+    openButton.textContent = "Open note";
+    openButton.addEventListener("click", () => openNoteModal(note, "hidden"));
+
+    const removeButton = document.createElement("button");
+    removeButton.className = "mini-remove";
+    removeButton.type = "button";
+    removeButton.setAttribute("aria-label", "Remove hidden note");
+    removeButton.textContent = "×";
+    removeButton.addEventListener("click", () => removeHiddenNote(note.id));
+
+    actions.append(openButton, removeButton);
+    item.append(title, preview, date, actions);
     secretNotesList.appendChild(item);
   });
 }
@@ -327,8 +345,9 @@ function makeNoteDraggable(card, note) {
   window.addEventListener("pointercancel", finishDrag);
 }
 
-function openNoteModal(note) {
+function openNoteModal(note, store = "public") {
   editingNoteId = note.id;
+  editingNoteStore = store;
   modalTitle.textContent = titleFromHTML(note.html);
   modalEditor.innerHTML = note.html || "";
   modalColor.value = note.color || "butter";
@@ -344,6 +363,7 @@ function closeNoteModal() {
   noteModal.classList.remove("open");
   noteModal.setAttribute("aria-hidden", "true");
   editingNoteId = null;
+  editingNoteStore = "public";
 }
 
 function updateOpenNote() {
@@ -351,7 +371,8 @@ function updateOpenNote() {
   const html = modalEditor.innerHTML.trim();
   if (!modalEditor.textContent.trim()) return;
 
-  const notes = getNotes();
+  const isHiddenNote = editingNoteStore === "hidden";
+  const notes = isHiddenNote ? getHiddenNotes() : getNotes();
   const updated = notes.map((note) => note.id === editingNoteId
     ? {
         ...note,
@@ -362,9 +383,17 @@ function updateOpenNote() {
       }
     : note);
 
-  saveNotes(updated);
+  if (isHiddenNote) {
+    saveHiddenNotes(updated);
+  } else {
+    saveNotes(updated);
+  }
   closeNoteModal();
-  render();
+  if (isHiddenNote && secretMode === "notes") {
+    renderHiddenNotes();
+  } else {
+    render();
+  }
 }
 
 function scrollToSavedTop() {
@@ -428,9 +457,12 @@ function openSecretModal() {
 }
 
 function closeSecretModal() {
+  sessionStorage.removeItem(SECRET_UNLOCKED_KEY);
+  setSecretMode(getSecretPassword() ? "unlock" : "setup");
   secretModal.classList.remove("open");
   secretModal.setAttribute("aria-hidden", "true");
   secretError.textContent = "";
+  secretNotesList.innerHTML = "";
 }
 
 function requireFiveDigits(value) {
@@ -497,6 +529,11 @@ function moveNoteToHidden(note) {
 
   if (secretMode === "notes") renderHiddenNotes();
   render();
+}
+
+function removeHiddenNote(noteId) {
+  saveHiddenNotes(getHiddenNotes().filter((note) => note.id !== noteId));
+  renderHiddenNotes();
 }
 
 function render() {
