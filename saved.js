@@ -275,6 +275,12 @@ function renderHiddenNotes() {
     openButton.textContent = "Open note";
     openButton.addEventListener("click", () => openNoteModal(note, "hidden"));
 
+    const moveWallButton = document.createElement("button");
+    moveWallButton.className = "move-wall-btn";
+    moveWallButton.type = "button";
+    moveWallButton.textContent = "Move to Wall";
+    moveWallButton.addEventListener("click", () => moveHiddenNoteToWall(note));
+
     const removeButton = document.createElement("button");
     removeButton.className = "mini-remove";
     removeButton.type = "button";
@@ -282,7 +288,7 @@ function renderHiddenNotes() {
     removeButton.textContent = "×";
     removeButton.addEventListener("click", () => removeHiddenNote(note.id));
 
-    actions.append(openButton, removeButton);
+    actions.append(openButton, moveWallButton, removeButton);
     item.append(title, preview, date, actions);
     secretNotesList.appendChild(item);
   });
@@ -534,6 +540,22 @@ function moveNoteToHidden(note) {
 function removeHiddenNote(noteId) {
   saveHiddenNotes(getHiddenNotes().filter((note) => note.id !== noteId));
   renderHiddenNotes();
+}
+
+function moveHiddenNoteToWall(note) {
+  const now = Date.now();
+  saveHiddenNotes(getHiddenNotes().filter((item) => item.id !== note.id));
+  saveNotes([
+    {
+      ...note,
+      position: undefined,
+      movedToWallAt: now,
+      updatedAt: now,
+    },
+    ...getNotes(),
+  ]);
+  renderHiddenNotes();
+  render();
 }
 
 function render() {
