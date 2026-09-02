@@ -93,6 +93,7 @@
       <p class="saved-preview"></p>
       <div class="saved-meta">
         <button class="load-btn" type="button">Open note</button>
+        <button class="move-hidden-btn" type="button">Move to Other</button>
         <span class="saved-date"></span>
       </div>
     </article>
@@ -161,6 +162,14 @@
         <input id="secretPasswordInput" type="password" inputmode="numeric" maxlength="5" autocomplete="off" pattern="[0-9]{5}" />
       </label>
       <p class="secret-error" id="secretError" role="alert" aria-live="polite"></p>
+
+      <div class="secret-notes-panel" id="secretNotesPanel" hidden>
+        <div class="secret-notes-head">
+          <strong id="secretNotesCount">0 hidden notes</strong>
+          <a class="tool-btn primary secret-add-link" href="hidden.html">Add hidden note</a>
+        </div>
+        <div class="secret-notes-list" id="secretNotesList"></div>
+      </div>
 
       <div class="secret-actions">
         <button class="tool-btn" id="secretCancel" type="button">Cancel</button>

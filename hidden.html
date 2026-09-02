@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hidden Note | Locker Notes</title>
+  <meta name="description" content="Write a hidden Locker Notes idea for the Other section." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell hidden-page-shell">
+    <main class="studio hidden-studio">
+      <header class="studio-header hidden-header">
+        <a class="back-link hidden-back-link" href="saved.html#other" aria-label="Back to Other">←</a>
+        <div class="brand-block">
+          <p class="eyebrow">Other</p>
+          <h1>hidden note</h1>
+          <p class="subtitle">A private writing space for ideas you want tucked away.</p>
+        </div>
+      </header>
+
+      <section class="workspace-column">
+        <article class="editor-card paper-card" id="editorCard" data-color="butter" data-kind="notecard">
+          <div class="paper-topline">
+            <span class="paper-chip">Hidden</span>
+            <div class="paper-tools">
+              <button class="tool-btn tool-btn-small inline-tool" id="highlightBtn" type="button"><span class="tool-icon">🖍</span>Highlight</button>
+              <span class="paper-chip muted" id="autosaveLabel">Auto-saves</span>
+            </div>
+          </div>
+
+          <div
+            id="editor"
+            class="editor"
+            contenteditable="true"
+            spellcheck="true"
+            data-placeholder="Write your hidden idea here..."
+            aria-label="Hidden writing space"
+          ></div>
+
+          <div class="corner-doodles" aria-hidden="true">
+            <span class="doodle doodle-star"></span>
+            <span class="doodle doodle-cloud"></span>
+            <span class="doodle doodle-arrow"></span>
+          </div>
+        </article>
+      </section>
+
+      <footer class="tool-dock" aria-label="Hidden note tools">
+        <div class="tool-pack">
+          <div class="tool-group">
+            <span class="dock-label">Paper style</span>
+            <div class="style-picker" id="stylePicker">
+              <button class="style-choice selected" data-kind="list" type="button">
+                <span class="style-thumb style-list"></span>
+                <span>List</span>
+              </button>
+              <button class="style-choice" data-kind="notecard" type="button">
+                <span class="style-thumb style-notecard"></span>
+                <span>Notecard</span>
+              </button>
+              <button class="style-choice" data-kind="notebook" type="button">
+                <span class="style-thumb style-notebook"></span>
+                <span>Notebook</span>
+              </button>
+              <button class="style-choice" data-kind="scratch" type="button">
+                <span class="style-thumb style-scratch"></span>
+                <span>Scratch Paper</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="tool-group">
+            <span class="dock-label">Pick your color</span>
+            <div class="palette" id="palette">
+              <button class="paper-swatch selected" data-color="sky" type="button">
+                <span class="swatch-sheet"></span>
+                <span>Blue</span>
+              </button>
+              <button class="paper-swatch" data-color="butter" type="button">
+                <span class="swatch-sheet"></span>
+                <span>Yellow</span>
+              </button>
+              <button class="paper-swatch" data-color="mint" type="button">
+                <span class="swatch-sheet"></span>
+                <span>Green</span>
+              </button>
+              <button class="paper-swatch" data-color="blush" type="button">
+                <span class="swatch-sheet"></span>
+                <span>Pink</span>
+              </button>
+              <button class="paper-swatch" data-color="plum" type="button">
+                <span class="swatch-sheet"></span>
+                <span>Purple</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="tool-group">
+            <span class="dock-label">Add this note</span>
+            <div class="action-group">
+              <button class="tool-btn" id="removeBtn" type="button"><span class="tool-icon">✕</span>Remove</button>
+              <button class="tool-btn primary" id="saveBtn" type="button"><span class="tool-icon">＋</span><span id="saveLabel">Add note</span></button>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <script src="hidden.js"></script>
+</body>
+</html>

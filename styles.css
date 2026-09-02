@@ -963,6 +963,7 @@ h1 {
   justify-content: space-between;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .load-btn {
@@ -970,6 +971,17 @@ h1 {
   background: rgba(255, 255, 255, 0.82);
   color: var(--ink);
   font-weight: 700;
+}
+
+.move-hidden-btn {
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(92, 108, 123, 0.12);
+  color: var(--accent-dark);
+  font-size: 0.74rem;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .saved-date {
@@ -1782,7 +1794,7 @@ h1 {
 }
 
 .secret-modal {
-  width: min(430px, 100%);
+  width: min(560px, 100%);
   gap: 14px;
   background: rgba(255, 255, 255, 0.98);
 }
@@ -1834,6 +1846,71 @@ h1 {
   font-weight: 700;
 }
 
+.secret-notes-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.secret-notes-panel[hidden] {
+  display: none;
+}
+
+.secret-notes-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.secret-notes-head strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.05rem;
+}
+
+.secret-add-link {
+  width: auto;
+  min-width: 132px;
+  text-decoration: none;
+}
+
+.secret-notes-list {
+  max-height: 290px;
+  display: grid;
+  gap: 10px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.secret-note-row {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(92, 108, 123, 0.12);
+  background: rgba(247, 249, 252, 0.9);
+}
+
+.secret-note-row[data-color="butter"] { background: linear-gradient(180deg, #fffbe0, #f4e891); }
+.secret-note-row[data-color="blush"] { background: linear-gradient(180deg, #fff0f4, #f8ccd6); }
+.secret-note-row[data-color="sky"] { background: linear-gradient(180deg, #eef7ff, #cfe4f6); }
+.secret-note-row[data-color="mint"] { background: linear-gradient(180deg, #f0faee, #d6efcf); }
+.secret-note-row[data-color="plum"] { background: linear-gradient(180deg, #f7efff, #ddc9f5); }
+
+.secret-note-row strong {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.secret-note-row span {
+  color: #3c4954;
+  font-size: 0.9rem;
+}
+
+.secret-note-row small,
+.secret-empty {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
 .secret-actions {
   justify-content: flex-end;
   flex-wrap: wrap;
@@ -1842,6 +1919,32 @@ h1 {
 .secret-actions .tool-btn {
   width: auto;
   min-width: 104px;
+}
+
+.hidden-page-shell {
+  min-height: 100vh;
+}
+
+.hidden-studio {
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.hidden-header {
+  justify-content: start;
+  align-items: start;
+}
+
+.hidden-back-link {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  font-size: 1.35rem;
+}
+
+.hidden-header h1 {
+  text-transform: lowercase;
 }
 
 .modal-close {

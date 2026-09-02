@@ -1,5 +1,7 @@
 const STORAGE_KEY = "locker-notes-saved-v4";
+const HIDDEN_STORAGE_KEY = "locker-notes-hidden-v1";
 const SECRET_PASSWORD_KEY = "locker-notes-secret-password-v1";
+const SECRET_UNLOCKED_KEY = "locker-notes-secret-unlocked-v1";
 const savedGrid = document.getElementById("savedGrid");
 const savedTotal = document.getElementById("savedTotal");
 const searchNotes = document.getElementById("searchNotes");
@@ -29,6 +31,9 @@ const secretCloseButton = document.getElementById("secretClose");
 const secretCancelButton = document.getElementById("secretCancel");
 const secretNewPasswordButton = document.getElementById("secretNewPassword");
 const secretSubmitButton = document.getElementById("secretSubmit");
+const secretNotesPanel = document.getElementById("secretNotesPanel");
+const secretNotesList = document.getElementById("secretNotesList");
+const secretNotesCount = document.getElementById("secretNotesCount");
 
 let editingNoteId = null;
 let activeColorFilter = "all";
@@ -65,6 +70,15 @@ function getNotes() {
 
 function saveNotes(notes) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
+}
+
+function getHiddenNotes() {
+  const notes = readJSON(HIDDEN_STORAGE_KEY, []);
+  return Array.isArray(notes) ? notes : [];
+}
+
+function saveHiddenNotes(notes) {
+  localStorage.setItem(HIDDEN_STORAGE_KEY, JSON.stringify(notes));
 }
 
 function getSecretPassword() {
@@ -224,6 +238,38 @@ function renderSecretSection() {
   savedGrid.appendChild(secretCard);
 }
 
+function renderHiddenNotes() {
+  const hiddenNotes = getHiddenNotes().sort((a, b) => dateValue(b, "updatedAt") - dateValue(a, "updatedAt"));
+  secretNotesCount.textContent = `${hiddenNotes.length} hidden note${hiddenNotes.length === 1 ? "" : "s"}`;
+  secretNotesList.innerHTML = "";
+
+  if (!hiddenNotes.length) {
+    const empty = document.createElement("p");
+    empty.className = "secret-empty";
+    empty.textContent = "No hidden notes yet.";
+    secretNotesList.appendChild(empty);
+    return;
+  }
+
+  hiddenNotes.forEach((note) => {
+    const item = document.createElement("article");
+    item.className = "secret-note-row";
+    item.dataset.color = note.color || "butter";
+
+    const title = document.createElement("strong");
+    title.textContent = titleFromHTML(note.html);
+
+    const preview = document.createElement("span");
+    preview.textContent = snippetFromHTML(note.html);
+
+    const date = document.createElement("small");
+    date.textContent = formatDate(note.updatedAt || note.createdAt);
+
+    item.append(title, preview, date);
+    secretNotesList.appendChild(item);
+  });
+}
+
 function persistPosition(note) {
   const notes = getNotes();
   const index = notes.findIndex((item) => item.id === note.id);
@@ -329,7 +375,10 @@ function setSecretMode(mode) {
   secretMode = mode;
   secretPasswordInput.value = "";
   secretError.textContent = "";
-  secretNewPasswordButton.hidden = mode !== "unlock";
+  secretNotesPanel.hidden = mode !== "notes";
+  secretPasswordInput.closest(".secret-input-label").hidden = mode === "notes";
+  secretSubmitButton.hidden = mode === "notes";
+  secretNewPasswordButton.hidden = mode !== "unlock" && mode !== "notes";
 
   if (mode === "setup") {
     secretTitle.textContent = "Make a password";
@@ -355,6 +404,13 @@ function setSecretMode(mode) {
     return;
   }
 
+  if (mode === "notes") {
+    secretTitle.textContent = "Other";
+    secretMessage.textContent = "These are your hidden notes.";
+    renderHiddenNotes();
+    return;
+  }
+
   secretTitle.textContent = "Enter password";
   secretMessage.textContent = "Type your 5-number password to view Other.";
   secretInputLabel.textContent = "Password";
@@ -362,10 +418,13 @@ function setSecretMode(mode) {
 }
 
 function openSecretModal() {
-  setSecretMode(getSecretPassword() ? "unlock" : "setup");
+  const hasSessionUnlock = sessionStorage.getItem(SECRET_UNLOCKED_KEY) === "true";
+  setSecretMode(getSecretPassword() && hasSessionUnlock ? "notes" : getSecretPassword() ? "unlock" : "setup");
   secretModal.classList.add("open");
   secretModal.setAttribute("aria-hidden", "false");
-  window.setTimeout(() => secretPasswordInput.focus(), 60);
+  window.setTimeout(() => {
+    if (secretMode !== "notes") secretPasswordInput.focus();
+  }, 60);
 }
 
 function closeSecretModal() {
@@ -398,8 +457,8 @@ function submitSecretPassword() {
       secretError.textContent = "That password is not correct.";
       return;
     }
-    secretMessage.textContent = "Other is unlocked.";
-    secretError.textContent = "";
+    sessionStorage.setItem(SECRET_UNLOCKED_KEY, "true");
+    setSecretMode("notes");
     return;
   }
 
@@ -414,9 +473,30 @@ function submitSecretPassword() {
 
   if (secretMode === "change-new") {
     saveSecretPassword(password);
+    sessionStorage.removeItem(SECRET_UNLOCKED_KEY);
     closeSecretModal();
     scrollToSavedTop();
   }
+}
+
+function moveNoteToHidden(note) {
+  const now = Date.now();
+  const publicNotes = getNotes().filter((item) => item.id !== note.id);
+  const hiddenNotes = getHiddenNotes();
+
+  saveNotes(publicNotes);
+  saveHiddenNotes([
+    {
+      ...note,
+      position: undefined,
+      hiddenAt: now,
+      updatedAt: now,
+    },
+    ...hiddenNotes,
+  ]);
+
+  if (secretMode === "notes") renderHiddenNotes();
+  render();
 }
 
 function render() {
@@ -443,6 +523,7 @@ function render() {
     const kind = fragment.querySelector(".saved-kind");
     const color = fragment.querySelector(".saved-color-label");
     const openButton = fragment.querySelector(".load-btn");
+    const moveHiddenButton = fragment.querySelector(".move-hidden-btn");
     const removeButton = fragment.querySelector(".mini-remove");
 
     card.dataset.color = note.color || "butter";
@@ -456,6 +537,7 @@ function render() {
     color.textContent = colorNames[note.color] || "Yellow paper";
 
     openButton.addEventListener("click", () => openNoteModal(note));
+    moveHiddenButton.addEventListener("click", () => moveNoteToHidden(note));
     makeNoteDraggable(card, note);
 
     removeButton.addEventListener("click", () => {
@@ -526,3 +608,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 render();
+
+if (window.location.hash === "#other") {
+  openSecretModal();
+}
