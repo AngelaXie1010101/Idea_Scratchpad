@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Saved Notes | Locker Notes</title>
+  <meta name="description" content="Browse, filter, and reopen your saved Locker Notes ideas." />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="saved-page-body">
+  <div class="app-shell saved-page-shell">
+    <main class="saved-page">
+      <header class="saved-page-header">
+        <a class="back-link" href="index.html#workspace" aria-label="Back to Locker Notes">← Back to writing</a>
+        <div class="saved-page-title">
+          <p class="eyebrow">Your personal idea shelf</p>
+          <h1>My Locker Stack ✦</h1>
+          <p class="subtitle">Every saved thought, sorted into a place you can find again.</p>
+        </div>
+        <div class="saved-page-count" aria-live="polite">
+          <strong id="savedTotal">0</strong>
+          <span>saved notes</span>
+        </div>
+      </header>
+
+      <section class="saved-controls" aria-label="Find saved notes">
+        <label class="saved-search">
+          <span class="sr-only">Search saved notes</span>
+          <span class="search-icon" aria-hidden="true">⌕</span>
+          <input id="searchNotes" type="search" placeholder="Search your notes..." autocomplete="off" />
+        </label>
+
+        <label class="select-control">
+          <span>Sort</span>
+          <select id="sortNotes">
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="edited">Recently edited</option>
+            <option value="alphabetical">A to Z</option>
+          </select>
+        </label>
+
+        <label class="select-control">
+          <span>Paper</span>
+          <select id="kindFilter">
+            <option value="all">All styles</option>
+            <option value="notecard">Notecard</option>
+            <option value="notebook">Notebook</option>
+            <option value="list">List</option>
+            <option value="scratch">Scratch Paper</option>
+          </select>
+        </label>
+      </section>
+
+      <nav class="filter-tabs" aria-label="Quick color filters">
+        <button class="filter-tab selected" data-color="all" type="button">All notes</button>
+        <button class="filter-tab" data-color="butter" type="button"><span class="tab-dot dot-butter"></span>Yellow</button>
+        <button class="filter-tab" data-color="sky" type="button"><span class="tab-dot dot-sky"></span>Blue</button>
+        <button class="filter-tab" data-color="mint" type="button"><span class="tab-dot dot-mint"></span>Green</button>
+        <button class="filter-tab" data-color="blush" type="button"><span class="tab-dot dot-blush"></span>Pink</button>
+        <button class="filter-tab" data-color="plum" type="button"><span class="tab-dot dot-plum"></span>Purple</button>
+      </nav>
+
+      <section class="saved-results-head">
+        <div>
+          <p class="eyebrow">The wall</p>
+          <h2 id="resultsHeading">All saved ideas</h2>
+        </div>
+        <div class="board-actions">
+          <span class="board-count" id="boardCount">Drag, drop, and group your thoughts</span>
+          <button class="clear-filters" id="clearFilters" type="button">Clear filters</button>
+        </div>
+      </section>
+
+      <section class="brainstorm-board" aria-label="Brainstorming wall">
+        <div class="board-surface" id="savedGrid" aria-live="polite" tabindex="0">
+          <span class="board-sticker board-sticker-one" aria-hidden="true">✦</span>
+          <span class="board-sticker board-sticker-two" aria-hidden="true">→</span>
+          <span class="board-sticker board-sticker-three" aria-hidden="true">ideas live here</span>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <template id="savedCardTemplate">
+    <article class="saved-note saved-page-note paper-card">
+      <div class="saved-note-topline">
+        <span class="paper-chip saved-kind"></span>
+        <span class="saved-color-label"></span>
+        <button class="mini-remove" type="button" aria-label="Remove saved note">×</button>
+      </div>
+      <h3 class="saved-title"></h3>
+      <p class="saved-preview"></p>
+      <div class="saved-meta">
+        <button class="load-btn" type="button">Open note</button>
+        <span class="saved-date"></span>
+      </div>
+    </article>
+  </template>
+
+  <div class="note-modal-backdrop" id="noteModal" aria-hidden="true">
+    <section class="note-modal paper-card" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="note-modal-head">
+        <div>
+          <p class="eyebrow">Editing your note</p>
+          <h2 id="modalTitle">Open note</h2>
+        </div>
+        <button class="back-btn modal-close" id="closeModal" type="button" aria-label="Close note editor">×</button>
+      </div>
+
+      <div class="note-modal-tools">
+        <label class="modal-select">
+          <span>Color</span>
+          <select id="modalColor">
+            <option value="sky">Blue</option>
+            <option value="butter">Yellow</option>
+            <option value="mint">Green</option>
+            <option value="blush">Pink</option>
+            <option value="plum">Purple</option>
+          </select>
+        </label>
+        <label class="modal-select">
+          <span>Paper</span>
+          <select id="modalKind">
+            <option value="notecard">Notecard</option>
+            <option value="notebook">Notebook</option>
+            <option value="list">List</option>
+            <option value="scratch">Scratch Paper</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="note-modal-paper paper-card" id="modalPaper" data-color="butter" data-kind="notecard">
+        <div class="paper-topline">
+          <span class="paper-chip">Your note</span>
+          <span class="paper-chip muted">Edit mode</span>
+        </div>
+        <div class="note-modal-editor" id="modalEditor" contenteditable="true" spellcheck="true" aria-label="Edit saved note"></div>
+      </div>
+
+      <div class="note-modal-actions">
+        <button class="tool-btn" id="cancelModal" type="button">Cancel</button>
+        <button class="tool-btn primary" id="updateNote" type="button"><span class="tool-icon">✓</span>Update note</button>
+      </div>
+    </section>
+  </div>
+
+  <script src="saved.js"></script>
+</body>
+</html>

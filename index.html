@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Locker Notes</title>
+  <meta
+    name="description"
+    content="A fun student-friendly locker workspace for sticky notes, notebook pages, lists, scratch paper, and saved ideas."
+  />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <div class="guide-banner" id="guideBanner" role="status" aria-live="polite">
+      <div class="guide-copy">
+        <span class="guide-tag">Welcome</span>
+        <p id="guideText">Locker Notes is a quick place to write, save, and keep your thoughts without reading a long intro.</p>
+      </div>
+      <div class="guide-actions">
+        <span class="guide-step" id="guideStep">1 / 8</span>
+        <button class="guide-next" id="guideNext" type="button">Next</button>
+      </div>
+    </div>
+
+    <main class="studio">
+      <header class="studio-header">
+        <div class="brand-block">
+          <p class="eyebrow">A place for the thoughts bouncing around your brain</p>
+          <h1>Locker Notes ✦</h1>
+          <p class="subtitle">One digital locker, one big note, and a few tiny cards to keep life organized.</p>
+        </div>
+
+        <div class="header-side">
+          <div class="mascot" aria-hidden="true">
+            <span class="mascot-face"></span>
+            <span class="mascot-bubble">Ready when you are.</span>
+          </div>
+        </div>
+      </header>
+
+      <section class="workspace-column">
+        <article class="editor-card paper-card" id="editorCard" data-color="butter" data-kind="notecard">
+          <div class="paper-topline">
+            <span class="paper-chip">Write now</span>
+            <div class="paper-tools">
+              <button class="tool-btn tool-btn-small inline-tool" id="highlightBtn" type="button"><span class="tool-icon">🖍</span>Highlight</button>
+              <span class="paper-chip muted" id="autosaveLabel">Auto-saves</span>
+            </div>
+          </div>
+
+          <div
+            id="editor"
+            class="editor"
+            contenteditable="true"
+            spellcheck="true"
+            data-placeholder="Write your idea here..."
+            aria-label="Writing space"
+          ></div>
+
+          <div class="corner-doodles" aria-hidden="true">
+            <span class="doodle doodle-star"></span>
+            <span class="doodle doodle-cloud"></span>
+            <span class="doodle doodle-arrow"></span>
+          </div>
+        </article>
+      </section>
+
+      <section class="locker-glance" aria-label="Locker at a glance">
+        <article class="glance-card">
+          <span class="glance-icon">📌</span>
+          <div>
+            <p class="glance-label">Recent notes</p>
+            <strong id="recentCount">0</strong>
+          </div>
+        </article>
+        <article class="glance-card">
+          <span class="glance-icon">🔥</span>
+          <div>
+            <p class="glance-label">My streak</p>
+            <strong id="streakCount">0 days</strong>
+          </div>
+        </article>
+        <article class="glance-card">
+          <span class="glance-icon">⭐</span>
+          <div>
+            <p class="glance-label">My progress</p>
+            <strong id="progressCount">0 notes</strong>
+          </div>
+        </article>
+        <article class="glance-card spark-card">
+          <span class="glance-icon">💡</span>
+          <div>
+            <p class="glance-label">Today’s spark</p>
+            <strong id="sparkText">Write about something you could explain for 5 minutes.</strong>
+          </div>
+        </article>
+      </section>
+
+      <aside class="locker-side" aria-label="Locker cards" hidden aria-hidden="true">
+        <article class="side-card side-note">
+          <span class="side-kicker">My notes</span>
+          <div class="side-line">
+            <strong id="savedCounter">0 saved</strong>
+            <span class="note-stamp">locker</span>
+          </div>
+          <p id="sideHint">Tap Add note to tuck a thought into your locker.</p>
+        </article>
+
+        <article class="side-card side-spark">
+          <span class="side-kicker">Random idea</span>
+          <p id="randomIdea">What song would match the mood of your day?</p>
+        </article>
+
+        <article class="side-card side-progress">
+          <span class="side-kicker">My progress</span>
+          <p id="progressDetail">0 notes created today.</p>
+        </article>
+
+        <article class="side-card side-buddy">
+          <span class="side-kicker">Locker buddy</span>
+          <p id="buddyText">Your notes are safe, even the messy ones.</p>
+        </article>
+      </aside>
+
+      <footer class="tool-dock" aria-label="Customizing tools">
+        <div class="tool-pack">
+          <div class="tool-group">
+            <span class="dock-label">Paper style</span>
+            <div class="style-picker" id="stylePicker">
+              <button class="style-choice selected" data-kind="list" type="button">
+                <span class="style-thumb style-list"></span>
+                <span>List</span>
+              </button>
+              <button class="style-choice" data-kind="notecard" type="button">
+                <span class="style-thumb style-notecard"></span>
+                <span>Notecard</span>
+              </button>
+              <button class="style-choice" data-kind="notebook" type="button">
+                <span class="style-thumb style-notebook"></span>
+                <span>Notebook</span>
+              </button>
+              <button class="style-choice" data-kind="scratch" type="button">
+                <span class="style-thumb style-scratch"></span>
+                <span>Scratch Paper</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="tool-group">
+            <span class="dock-label">Pick your color</span>
+            <div class="palette" id="palette">
+              <button class="paper-swatch selected" data-color="sky" type="button">
+                <span class="swatch-sheet"></span>
+                <span>Blue</span>
+              </button>
+              <button class="paper-swatch" data-color="butter" type="button">
+                <span class="swatch-sheet"></span>
+                <span>Yellow</span>
+              </button>
+              <button class="paper-swatch" data-color="mint" type="button">
+                <span class="swatch-sheet"></span>
+                <span>Green</span>
+              </button>
+              <button class="paper-swatch" data-color="blush" type="button">
+                <span class="swatch-sheet"></span>
+                <span>Pink</span>
+              </button>
+              <button class="paper-swatch" data-color="plum" type="button">
+                <span class="swatch-sheet"></span>
+                <span>Purple</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="tool-group">
+            <span class="dock-label">Add this note</span>
+            <div class="action-group">
+              <button class="tool-btn" id="removeBtn" type="button"><span class="tool-icon">✕</span>Remove</button>
+              <button class="tool-btn primary" id="saveBtn" type="button"><span class="tool-icon">＋</span><span id="saveLabel">Add note</span></button>
+            </div>
+          </div>
+        </div>
+        <button class="saved-trigger saved-panel-card" id="savedNotesBtn" type="button" aria-label="View saved notes">
+          <span class="saved-trigger-copy">
+            <span class="drawer-kicker">Saved notes</span>
+            <span class="saved-trigger-title">Open your locker stack</span>
+          </span>
+          <span class="btn-icon" aria-hidden="true">↗</span>
+        </button>
+      </footer>
+    </main>
+
+    <aside class="saved-drawer" id="savedDrawer" aria-hidden="true">
+      <div class="drawer-head">
+        <button class="back-btn" id="backBtn" type="button" aria-label="Back to writing">←</button>
+        <div>
+          <p class="drawer-kicker">Saved notes</p>
+          <h2>Your locker stack</h2>
+        </div>
+      </div>
+      <div class="saved-list" id="savedList"></div>
+    </aside>
+  </div>
+
+  <template id="savedNoteTemplate">
+    <article class="saved-note paper-card">
+      <div class="paper-topline">
+        <span class="paper-chip">Saved</span>
+        <button class="mini-remove" type="button" aria-label="Remove saved note">×</button>
+      </div>
+      <h3 class="saved-title"></h3>
+      <p class="saved-preview"></p>
+      <div class="saved-meta">
+        <button class="load-btn" type="button">Open</button>
+        <span class="saved-date"></span>
+      </div>
+    </article>
+  </template>
+
+  <script src="script.js"></script>
+</body>
+</html>
