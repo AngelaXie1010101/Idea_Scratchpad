@@ -11,6 +11,13 @@ const removeBtn = document.getElementById("removeBtn");
 const saveBtn = document.getElementById("saveBtn");
 const saveLabel = document.getElementById("saveLabel");
 const autosaveLabel = document.getElementById("autosaveLabel");
+const accountName = document.getElementById("accountName");
+const accountSwitchBtn = document.getElementById("accountSwitchBtn");
+const accountModal = document.getElementById("accountModal");
+const accountInput = document.getElementById("accountInput");
+const accountError = document.getElementById("accountError");
+const accountCancelBtn = document.getElementById("accountCancelBtn");
+const accountSubmitBtn = document.getElementById("accountSubmitBtn");
 const guideBanner = document.getElementById("guideBanner");
 const guideText = document.getElementById("guideText");
 const guideNext = document.getElementById("guideNext");
@@ -33,6 +40,10 @@ const STORAGE_KEYS = {
   seenGuide: "locker-notes-guide-seen-v4",
   streak: "locker-notes-streak-v4",
 };
+
+const ACCOUNT_KEY = "locker-notes-active-account-v1";
+const DEFAULT_ACCOUNT = "Guest";
+const SECRET_UNLOCKED_KEY = "locker-notes-secret-unlocked-v1";
 
 const PLACEHOLDER_TEXT = "Write your idea here...";
 
@@ -76,9 +87,18 @@ let activeColor = "butter";
 let activeKind = "notecard";
 let currentSavedId = null;
 
+function getActiveAccount() {
+  return localStorage.getItem(ACCOUNT_KEY) || DEFAULT_ACCOUNT;
+}
+
+function accountStorageKey(key) {
+  const account = getActiveAccount();
+  return account === DEFAULT_ACCOUNT ? key : `${key}:${encodeURIComponent(account)}`;
+}
+
 function readJSON(key, fallback) {
   try {
-    const raw = localStorage.getItem(key);
+    const raw = localStorage.getItem(accountStorageKey(key));
     return raw ? JSON.parse(raw) : fallback;
   } catch {
     return fallback;
@@ -86,7 +106,7 @@ function readJSON(key, fallback) {
 }
 
 function writeJSON(key, value) {
-  localStorage.setItem(key, JSON.stringify(value));
+  localStorage.setItem(accountStorageKey(key), JSON.stringify(value));
 }
 
 function getDraft() {
@@ -185,6 +205,52 @@ function setSparkMessage() {
   const message = sparkPool[seed];
   sparkText.textContent = message;
   randomIdea.textContent = message;
+}
+
+function renderAccount() {
+  accountName.textContent = getActiveAccount();
+}
+
+function openAccountModal() {
+  accountInput.value = "";
+  accountError.textContent = "";
+  accountModal.classList.add("open");
+  accountModal.setAttribute("aria-hidden", "false");
+  window.setTimeout(() => accountInput.focus(), 60);
+}
+
+function closeAccountModal() {
+  accountModal.classList.remove("open");
+  accountModal.setAttribute("aria-hidden", "true");
+  accountError.textContent = "";
+}
+
+function refreshForAccount() {
+  currentSavedId = null;
+  restoreDraft();
+  renderSavedNotes();
+  setSideMetrics();
+  renderAccount();
+}
+
+function signOut() {
+  sessionStorage.removeItem(accountStorageKey(SECRET_UNLOCKED_KEY));
+  localStorage.removeItem(ACCOUNT_KEY);
+  refreshForAccount();
+  openAccountModal();
+}
+
+function signIn() {
+  const nextAccount = accountInput.value.replace(/\s+/g, " ").trim();
+  if (!nextAccount) {
+    accountError.textContent = "Type an account name.";
+    return;
+  }
+
+  localStorage.setItem(ACCOUNT_KEY, nextAccount);
+  closeAccountModal();
+  refreshForAccount();
+  setBuddyMessage(`Signed in as ${nextAccount}.`);
 }
 
 function setSideMetrics() {
@@ -453,6 +519,18 @@ guideNext.addEventListener("click", () => {
   }
 });
 
+accountSwitchBtn.addEventListener("click", signOut);
+accountCancelBtn.addEventListener("click", closeAccountModal);
+accountSubmitBtn.addEventListener("click", signIn);
+
+accountInput.addEventListener("keydown", (event) => {
+  if (event.key === "Enter") signIn();
+});
+
+accountModal.addEventListener("click", (event) => {
+  if (event.target === accountModal) closeAccountModal();
+});
+
 savedNotesBtn.addEventListener("click", () => {
   window.location.href = "saved.html";
 });
@@ -481,17 +559,22 @@ editor.addEventListener("paste", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && accountModal.classList.contains("open")) {
+    closeAccountModal();
+  }
+
   if (event.key === "Escape" && savedDrawer.classList.contains("open")) {
     closeSavedDrawer();
   }
 });
 
-document.querySelectorAll(".paper-swatch, .style-choice, .tool-btn, .guide-next, .saved-trigger, .back-btn, .load-btn, .mini-remove").forEach((button) => {
+document.querySelectorAll(".paper-swatch, .style-choice, .tool-btn, .guide-next, .saved-trigger, .back-btn, .load-btn, .mini-remove, .account-switch").forEach((button) => {
   button.addEventListener("mousedown", () => {
     button.classList.remove("stamp");
   });
 });
 
+renderAccount();
 restoreDraft();
 renderSavedNotes();
 setSideMetrics();

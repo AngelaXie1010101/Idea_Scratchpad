@@ -32,6 +32,13 @@
         </div>
 
         <div class="header-side">
+          <section class="account-card" aria-label="Account">
+            <div>
+              <span class="account-label">Signed in</span>
+              <strong id="accountName">Guest</strong>
+            </div>
+            <button class="account-switch" id="accountSwitchBtn" type="button">Log out</button>
+          </section>
           <div class="mascot" aria-hidden="true">
             <span class="mascot-face"></span>
             <span class="mascot-bubble">Ready when you are.</span>
@@ -201,6 +208,26 @@
       </div>
       <div class="saved-list" id="savedList"></div>
     </aside>
+  </div>
+
+  <div class="account-modal-backdrop" id="accountModal" aria-hidden="true">
+    <section class="account-modal paper-card" role="dialog" aria-modal="true" aria-labelledby="accountModalTitle">
+      <div class="account-modal-head">
+        <div>
+          <p class="eyebrow">Account</p>
+          <h2 id="accountModalTitle">Sign in</h2>
+        </div>
+      </div>
+      <label class="account-input-label">
+        <span>Account name</span>
+        <input id="accountInput" type="text" maxlength="24" autocomplete="off" placeholder="Type a name..." />
+      </label>
+      <p class="account-error" id="accountError" role="alert" aria-live="polite"></p>
+      <div class="account-modal-actions">
+        <button class="tool-btn" id="accountCancelBtn" type="button">Cancel</button>
+        <button class="tool-btn primary" id="accountSubmitBtn" type="button">Sign in</button>
+      </div>
+    </section>
   </div>
 
   <template id="savedNoteTemplate">
