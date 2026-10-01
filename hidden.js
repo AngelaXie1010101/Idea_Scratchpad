@@ -2,24 +2,9 @@ const HIDDEN_STORAGE_KEY = "locker-notes-hidden-v1";
 const HIDDEN_DRAFT_KEY = "locker-notes-hidden-draft-v1";
 const SECRET_PASSWORD_KEY = "locker-notes-secret-password-v1";
 const SECRET_UNLOCKED_KEY = "locker-notes-secret-unlocked-v1";
-const ACCOUNT_KEY = "locker-notes-active-account-v1";
-const DEFAULT_ACCOUNT = "Guest";
 const PLACEHOLDER_TEXT = "Write your hidden idea here...";
 
-function getActiveAccount() {
-  return localStorage.getItem(ACCOUNT_KEY) || DEFAULT_ACCOUNT;
-}
-
-function accountStorageKey(key) {
-  const account = getActiveAccount();
-  return account === DEFAULT_ACCOUNT ? key : `${key}:${encodeURIComponent(account)}`;
-}
-
-function secretUnlockedKey() {
-  return accountStorageKey(SECRET_UNLOCKED_KEY);
-}
-
-if (!localStorage.getItem(accountStorageKey(SECRET_PASSWORD_KEY)) || sessionStorage.getItem(secretUnlockedKey()) !== "true") {
+if (!localStorage.getItem(SECRET_PASSWORD_KEY) || sessionStorage.getItem(SECRET_UNLOCKED_KEY) !== "true") {
   window.location.href = "saved.html#other";
 }
 
@@ -43,7 +28,7 @@ const defaultDraft = {
 
 function readJSON(key, fallback) {
   try {
-    const raw = localStorage.getItem(accountStorageKey(key));
+    const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : fallback;
   } catch {
     return fallback;
@@ -51,7 +36,7 @@ function readJSON(key, fallback) {
 }
 
 function writeJSON(key, value) {
-  localStorage.setItem(accountStorageKey(key), JSON.stringify(value));
+  localStorage.setItem(key, JSON.stringify(value));
 }
 
 function getHiddenNotes() {
@@ -187,8 +172,8 @@ function saveCurrentNote() {
 
   setHiddenNotes(notes);
   editor.innerHTML = "";
-  localStorage.removeItem(accountStorageKey(HIDDEN_DRAFT_KEY));
-  sessionStorage.setItem(secretUnlockedKey(), "true");
+  localStorage.removeItem(HIDDEN_DRAFT_KEY);
+  sessionStorage.setItem(SECRET_UNLOCKED_KEY, "true");
   setSaveLabel("Added!");
   animatePaper();
 }

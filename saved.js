@@ -2,8 +2,6 @@ const STORAGE_KEY = "locker-notes-saved-v4";
 const HIDDEN_STORAGE_KEY = "locker-notes-hidden-v1";
 const SECRET_PASSWORD_KEY = "locker-notes-secret-password-v1";
 const SECRET_UNLOCKED_KEY = "locker-notes-secret-unlocked-v1";
-const ACCOUNT_KEY = "locker-notes-active-account-v1";
-const DEFAULT_ACCOUNT = "Guest";
 const savedGrid = document.getElementById("savedGrid");
 const savedTotal = document.getElementById("savedTotal");
 const searchNotes = document.getElementById("searchNotes");
@@ -42,15 +40,6 @@ let editingNoteStore = "public";
 let activeColorFilter = "all";
 let secretMode = "setup";
 
-function getActiveAccount() {
-  return localStorage.getItem(ACCOUNT_KEY) || DEFAULT_ACCOUNT;
-}
-
-function accountStorageKey(key) {
-  const account = getActiveAccount();
-  return account === DEFAULT_ACCOUNT ? key : `${key}:${encodeURIComponent(account)}`;
-}
-
 const colorNames = {
   butter: "Yellow",
   sky: "Blue",
@@ -68,7 +57,7 @@ const kindNames = {
 
 function readJSON(key, fallback) {
   try {
-    const value = localStorage.getItem(accountStorageKey(key));
+    const value = localStorage.getItem(key);
     return value ? JSON.parse(value) : fallback;
   } catch {
     return fallback;
@@ -81,7 +70,7 @@ function getNotes() {
 }
 
 function saveNotes(notes) {
-  localStorage.setItem(accountStorageKey(STORAGE_KEY), JSON.stringify(notes));
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(notes));
 }
 
 function getHiddenNotes() {
@@ -90,19 +79,15 @@ function getHiddenNotes() {
 }
 
 function saveHiddenNotes(notes) {
-  localStorage.setItem(accountStorageKey(HIDDEN_STORAGE_KEY), JSON.stringify(notes));
+  localStorage.setItem(HIDDEN_STORAGE_KEY, JSON.stringify(notes));
 }
 
 function getSecretPassword() {
-  return localStorage.getItem(accountStorageKey(SECRET_PASSWORD_KEY)) || "";
+  return localStorage.getItem(SECRET_PASSWORD_KEY) || "";
 }
 
 function saveSecretPassword(password) {
-  localStorage.setItem(accountStorageKey(SECRET_PASSWORD_KEY), password);
-}
-
-function secretUnlockedKey() {
-  return accountStorageKey(SECRET_UNLOCKED_KEY);
+  localStorage.setItem(SECRET_PASSWORD_KEY, password);
 }
 
 function textFromHTML(html) {
@@ -468,7 +453,7 @@ function setSecretMode(mode) {
 }
 
 function openSecretModal() {
-  const hasSessionUnlock = sessionStorage.getItem(secretUnlockedKey()) === "true";
+  const hasSessionUnlock = sessionStorage.getItem(SECRET_UNLOCKED_KEY) === "true";
   setSecretMode(getSecretPassword() && hasSessionUnlock ? "notes" : getSecretPassword() ? "unlock" : "setup");
   secretModal.classList.add("open");
   secretModal.setAttribute("aria-hidden", "false");
@@ -478,7 +463,7 @@ function openSecretModal() {
 }
 
 function closeSecretModal() {
-  sessionStorage.removeItem(secretUnlockedKey());
+  sessionStorage.removeItem(SECRET_UNLOCKED_KEY);
   setSecretMode(getSecretPassword() ? "unlock" : "setup");
   secretModal.classList.remove("open");
   secretModal.setAttribute("aria-hidden", "true");
@@ -510,7 +495,7 @@ function submitSecretPassword() {
       secretError.textContent = "That password is not correct.";
       return;
     }
-    sessionStorage.setItem(secretUnlockedKey(), "true");
+    sessionStorage.setItem(SECRET_UNLOCKED_KEY, "true");
     setSecretMode("notes");
     return;
   }
@@ -526,7 +511,7 @@ function submitSecretPassword() {
 
   if (secretMode === "change-new") {
     saveSecretPassword(password);
-    sessionStorage.removeItem(secretUnlockedKey());
+    sessionStorage.removeItem(SECRET_UNLOCKED_KEY);
     closeSecretModal();
     scrollToSavedTop();
   }

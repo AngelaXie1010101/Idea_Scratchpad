@@ -30,20 +30,6 @@
           <h1>Locker Notes ✦</h1>
           <p class="subtitle">One digital locker, one big note, and a few tiny cards to keep life organized.</p>
         </div>
-
-        <div class="header-side">
-          <section class="account-card" aria-label="Account">
-            <div>
-              <span class="account-label">Signed in</span>
-              <strong id="accountName">Guest</strong>
-            </div>
-            <button class="account-switch" id="accountSwitchBtn" type="button">Log out</button>
-          </section>
-          <div class="mascot" aria-hidden="true">
-            <span class="mascot-face"></span>
-            <span class="mascot-bubble">Ready when you are.</span>
-          </div>
-        </div>
       </header>
 
       <section class="workspace-column">
@@ -52,6 +38,8 @@
             <span class="paper-chip">Write now</span>
             <div class="paper-tools">
               <button class="tool-btn tool-btn-small inline-tool" id="highlightBtn" type="button"><span class="tool-icon">🖍</span>Highlight</button>
+              <button class="tool-btn tool-btn-small inline-tool" id="removeBtn" type="button">Clear</button>
+              <button class="tool-btn tool-btn-small inline-tool primary" id="saveBtn" type="button"><span class="tool-icon">＋</span><span id="saveLabel">Add this note</span></button>
               <span class="paper-chip muted" id="autosaveLabel">Auto-saves</span>
             </div>
           </div>
@@ -111,7 +99,7 @@
             <strong id="savedCounter">0 saved</strong>
             <span class="note-stamp">locker</span>
           </div>
-          <p id="sideHint">Tap Add note to tuck a thought into your locker.</p>
+          <p id="sideHint">Tap Add this note to tuck a thought into your locker.</p>
         </article>
 
         <article class="side-card side-spark">
@@ -179,14 +167,6 @@
               </button>
             </div>
           </div>
-
-          <div class="tool-group">
-            <span class="dock-label">Add this note</span>
-            <div class="action-group">
-              <button class="tool-btn" id="removeBtn" type="button"><span class="tool-icon">✕</span>Remove</button>
-              <button class="tool-btn primary" id="saveBtn" type="button"><span class="tool-icon">＋</span><span id="saveLabel">Add note</span></button>
-            </div>
-          </div>
         </div>
         <button class="saved-trigger saved-panel-card" id="savedNotesBtn" type="button" aria-label="View saved notes">
           <span class="saved-trigger-copy">
@@ -209,27 +189,6 @@
       <div class="saved-list" id="savedList"></div>
     </aside>
   </div>
-
-  <div class="account-modal-backdrop" id="accountModal" aria-hidden="true">
-    <section class="account-modal paper-card" role="dialog" aria-modal="true" aria-labelledby="accountModalTitle">
-      <div class="account-modal-head">
-        <div>
-          <p class="eyebrow">Account</p>
-          <h2 id="accountModalTitle">Sign in</h2>
-        </div>
-      </div>
-      <label class="account-input-label">
-        <span>Account name</span>
-        <input id="accountInput" type="text" maxlength="24" autocomplete="off" placeholder="Type a name..." />
-      </label>
-      <p class="account-error" id="accountError" role="alert" aria-live="polite"></p>
-      <div class="account-modal-actions">
-        <button class="tool-btn" id="accountCancelBtn" type="button">Cancel</button>
-        <button class="tool-btn primary" id="accountSubmitBtn" type="button">Sign in</button>
-      </div>
-    </section>
-  </div>
-
   <template id="savedNoteTemplate">
     <article class="saved-note paper-card">
       <div class="paper-topline">

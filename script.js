@@ -11,13 +11,6 @@ const removeBtn = document.getElementById("removeBtn");
 const saveBtn = document.getElementById("saveBtn");
 const saveLabel = document.getElementById("saveLabel");
 const autosaveLabel = document.getElementById("autosaveLabel");
-const accountName = document.getElementById("accountName");
-const accountSwitchBtn = document.getElementById("accountSwitchBtn");
-const accountModal = document.getElementById("accountModal");
-const accountInput = document.getElementById("accountInput");
-const accountError = document.getElementById("accountError");
-const accountCancelBtn = document.getElementById("accountCancelBtn");
-const accountSubmitBtn = document.getElementById("accountSubmitBtn");
 const guideBanner = document.getElementById("guideBanner");
 const guideText = document.getElementById("guideText");
 const guideNext = document.getElementById("guideNext");
@@ -41,10 +34,6 @@ const STORAGE_KEYS = {
   streak: "locker-notes-streak-v4",
 };
 
-const ACCOUNT_KEY = "locker-notes-active-account-v1";
-const DEFAULT_ACCOUNT = "Guest";
-const SECRET_UNLOCKED_KEY = "locker-notes-secret-unlocked-v1";
-
 const PLACEHOLDER_TEXT = "Write your idea here...";
 
 const guideSteps = [
@@ -53,8 +42,8 @@ const guideSteps = [
   "Pick a paper style: notecard, notebook, list, or scratch paper.",
   "Choose a paper color to change the note itself, not just a button.",
   "Select text, then tap Highlight to call attention to it.",
-  "Remove clears the current draft when you want a fresh page.",
-  "Add note tucks this thought into Saved notes, then clears the page for your next idea.",
+  "Clear wipes the current draft when you want a fresh page.",
+  "Add this note tucks this thought into Saved notes, then clears the page for your next idea.",
   "Tap Saved notes to open your stack, where you can sort and edit every idea you have added.",
 ];
 
@@ -87,18 +76,9 @@ let activeColor = "butter";
 let activeKind = "notecard";
 let currentSavedId = null;
 
-function getActiveAccount() {
-  return localStorage.getItem(ACCOUNT_KEY) || DEFAULT_ACCOUNT;
-}
-
-function accountStorageKey(key) {
-  const account = getActiveAccount();
-  return account === DEFAULT_ACCOUNT ? key : `${key}:${encodeURIComponent(account)}`;
-}
-
 function readJSON(key, fallback) {
   try {
-    const raw = localStorage.getItem(accountStorageKey(key));
+    const raw = localStorage.getItem(key);
     return raw ? JSON.parse(raw) : fallback;
   } catch {
     return fallback;
@@ -106,7 +86,7 @@ function readJSON(key, fallback) {
 }
 
 function writeJSON(key, value) {
-  localStorage.setItem(accountStorageKey(key), JSON.stringify(value));
+  localStorage.setItem(key, JSON.stringify(value));
 }
 
 function getDraft() {
@@ -191,7 +171,7 @@ function setSaveLabel(tempText) {
   saveBtn.classList.add("stamp");
   window.clearTimeout(setSaveLabel._timer);
   setSaveLabel._timer = window.setTimeout(() => {
-    saveLabel.textContent = "Add note";
+    saveLabel.textContent = "Add this note";
     saveBtn.classList.remove("stamp");
   }, 900);
 }
@@ -207,59 +187,13 @@ function setSparkMessage() {
   randomIdea.textContent = message;
 }
 
-function renderAccount() {
-  accountName.textContent = getActiveAccount();
-}
-
-function openAccountModal() {
-  accountInput.value = "";
-  accountError.textContent = "";
-  accountModal.classList.add("open");
-  accountModal.setAttribute("aria-hidden", "false");
-  window.setTimeout(() => accountInput.focus(), 60);
-}
-
-function closeAccountModal() {
-  accountModal.classList.remove("open");
-  accountModal.setAttribute("aria-hidden", "true");
-  accountError.textContent = "";
-}
-
-function refreshForAccount() {
-  currentSavedId = null;
-  restoreDraft();
-  renderSavedNotes();
-  setSideMetrics();
-  renderAccount();
-}
-
-function signOut() {
-  sessionStorage.removeItem(accountStorageKey(SECRET_UNLOCKED_KEY));
-  localStorage.removeItem(ACCOUNT_KEY);
-  refreshForAccount();
-  openAccountModal();
-}
-
-function signIn() {
-  const nextAccount = accountInput.value.replace(/\s+/g, " ").trim();
-  if (!nextAccount) {
-    accountError.textContent = "Type an account name.";
-    return;
-  }
-
-  localStorage.setItem(ACCOUNT_KEY, nextAccount);
-  closeAccountModal();
-  refreshForAccount();
-  setBuddyMessage(`Signed in as ${nextAccount}.`);
-}
-
 function setSideMetrics() {
   const notes = getSavedNotes();
   recentCount.textContent = `${notes.length}`;
   progressCount.textContent = `${notes.length} notes`;
   progressDetail.textContent = `${notes.filter((note) => (note.updatedAt || note.createdAt || 0)).length} notes stored in your locker.`;
   streakCount.textContent = `${getStreak(notes)} day${getStreak(notes) === 1 ? "" : "s"}`;
-  sideHint.textContent = notes.length ? "Tap Saved notes to revisit an old idea." : "Tap Add note to tuck a thought into your locker.";
+  sideHint.textContent = notes.length ? "Tap Saved notes to revisit an old idea." : "Tap Add this note to tuck a thought into your locker.";
 }
 
 function escapeHTML(html) {
@@ -354,7 +288,21 @@ function restoreDraft() {
   setEditorHTML(sanitizeEditorHTML(draft.html || ""));
 }
 
-function applyWrap(tagName, className) {
+function unwrapMarkFromRange(range) {
+  const marks = Array.from(editor.querySelectorAll("mark")).filter((mark) => range.intersectsNode(mark));
+  if (!marks.length) return false;
+
+  marks.forEach((mark) => {
+    const parent = mark.parentNode;
+    while (mark.firstChild) parent.insertBefore(mark.firstChild, mark);
+    parent.removeChild(mark);
+    parent.normalize();
+  });
+
+  return true;
+}
+
+function toggleHighlight() {
   const target = getSelectionWithinEditor();
   if (!target) {
     animatePaper();
@@ -362,8 +310,14 @@ function applyWrap(tagName, className) {
   }
 
   const { selection, range } = target;
-  const wrapper = document.createElement(tagName);
-  if (className) wrapper.className = className;
+  if (unwrapMarkFromRange(range)) {
+    selection.removeAllRanges();
+    animatePaper();
+    saveDraft();
+    return;
+  }
+
+  const wrapper = document.createElement("mark");
   wrapper.appendChild(range.extractContents());
   range.insertNode(wrapper);
   selection.removeAllRanges();
@@ -372,18 +326,9 @@ function applyWrap(tagName, className) {
 }
 
 function unwrapSelection() {
-  const target = getSelectionWithinEditor();
-  if (target) {
-    const { range } = target;
-    range.deleteContents();
-    animatePaper();
-    saveDraft();
-    return;
-  }
-
-  editor.innerHTML = "<p></p>";
+  editor.innerHTML = "";
   currentSavedId = null;
-    setSaveLabel("Add note");
+  setSaveLabel("Add this note");
   setBuddyMessage("Fresh page. New thought?");
   saveDraft();
   animatePaper();
@@ -519,18 +464,6 @@ guideNext.addEventListener("click", () => {
   }
 });
 
-accountSwitchBtn.addEventListener("click", signOut);
-accountCancelBtn.addEventListener("click", closeAccountModal);
-accountSubmitBtn.addEventListener("click", signIn);
-
-accountInput.addEventListener("keydown", (event) => {
-  if (event.key === "Enter") signIn();
-});
-
-accountModal.addEventListener("click", (event) => {
-  if (event.target === accountModal) closeAccountModal();
-});
-
 savedNotesBtn.addEventListener("click", () => {
   window.location.href = "saved.html";
 });
@@ -544,7 +477,7 @@ styleChoices.forEach((button) => {
   button.addEventListener("click", () => setPaperKind(button.dataset.kind));
 });
 
-highlightBtn.addEventListener("click", () => applyWrap("mark"));
+highlightBtn.addEventListener("click", toggleHighlight);
 removeBtn.addEventListener("click", unwrapSelection);
 saveBtn.addEventListener("click", saveCurrentNote);
 
@@ -559,22 +492,17 @@ editor.addEventListener("paste", (event) => {
 });
 
 document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape" && accountModal.classList.contains("open")) {
-    closeAccountModal();
-  }
-
   if (event.key === "Escape" && savedDrawer.classList.contains("open")) {
     closeSavedDrawer();
   }
 });
 
-document.querySelectorAll(".paper-swatch, .style-choice, .tool-btn, .guide-next, .saved-trigger, .back-btn, .load-btn, .mini-remove, .account-switch").forEach((button) => {
+document.querySelectorAll(".paper-swatch, .style-choice, .tool-btn, .guide-next, .saved-trigger, .back-btn, .load-btn, .mini-remove").forEach((button) => {
   button.addEventListener("mousedown", () => {
     button.classList.remove("stamp");
   });
 });
 
-renderAccount();
 restoreDraft();
 renderSavedNotes();
 setSideMetrics();
